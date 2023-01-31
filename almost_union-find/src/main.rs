@@ -59,7 +59,7 @@ impl UnionFind {
     fn size_sum(&self, p: usize) -> (usize, usize) {
         // Return value and size of 1 if arrived at a leaf (end of tree)
         if self.children[p].len() == 0 {
-            return (1, p);
+            return (1, p + 1);
         }
 
         let mut size = 0;
