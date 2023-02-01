@@ -6,7 +6,7 @@ struct UnionFind {
     parents: Vec<usize>, // Parent of every number (0..n)
     children: Vec<Vec<usize>>, // Children of every number
     size: Vec<usize>, // Size of subtree
-    sum: Vec<usize>, // Sum of elements in subtree
+    sum: Vec<u64>, // Sum of elements in subtree
 }
 
 impl UnionFind {
@@ -15,7 +15,7 @@ impl UnionFind {
             parents: (0..size).collect(),
             children: vec![Vec::with_capacity(0); size],
             size: vec![1; size],
-            sum: (1..=size).collect(),
+            sum: (1u64..=(size as u64)).collect(),
         }
     }
 
@@ -33,6 +33,10 @@ impl UnionFind {
         let p_root = self.find(p);
         let q_root = self.find(q);
 
+        if p_root == q_root { // p & q are already in the same set
+            return;
+        }
+
         // Move the set q is inside of as a branch under the root of the set p is under
         self.parents[q_root] = p_root;
 
@@ -47,12 +51,18 @@ impl UnionFind {
     
     // Operation 2
     fn move_number(&mut self, p: usize, q: usize) {
+        let p_root = self.find(p);
+        let q_root = self.find(q);
+
+        if p_root == q_root { // p & q are already in the same set
+            return;
+        }
+
         if self.parents[p] != p && self.children[p].len() > 0 { // p is not the root
             // Set p's first child's parent as p's parent
             self.parents[self.children[p][0]] = self.parents[p];
         }
 
-        let q_root = self.find(q);
         // Set p's parent to the root of q
         self.parents[p] = q_root;
         
@@ -76,14 +86,14 @@ impl UnionFind {
         
         // Add size and value of p to q_root's size and sum
         self.size[q_root] += 1;
-        self.sum[q_root] += p + 1;
+        self.sum[q_root] += (p + 1) as u64;
         eprintln!("{}: size: {}, sum: {}", q_root + 1, self.size[q_root], self.sum[q_root]);
         
         // If p had children, set the first one's size and sum to p's, excluding p
         if self.children[p].len() > 0 {
             let first_child = self.children[p][0];
             self.size[first_child] = self.size[p] - 1;
-            self.sum[first_child] = self.sum[p] - (p + 1);
+            self.sum[first_child] = self.sum[p] - (p + 1) as u64;
         }
 
         // Remove p's children
@@ -91,7 +101,7 @@ impl UnionFind {
     }
     
     // Operation 3
-    // Prints the number of child elements and their sum (including p)
+    // Prints the number of elements and their sum
     fn size_sum(&mut self, p: usize) {
         let root = self.find(p);
 
